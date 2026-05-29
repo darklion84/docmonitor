@@ -129,13 +129,27 @@ def _load_sources() -> list:
     return cfg.get("sources", []) or []
 
 
+def _resolve_out_subdir(src: str) -> str:
+    """Поддиректория для вывода .txt относительно OUT_DIR.
+
+    Для URL и абсолютных путей — пусто (плоско в OUT_DIR).
+    Для относительных путей внутри office-src/ — повторяем структуру подпапок:
+      src='teams/payments/api.docx' -> 'teams/payments'.
+    """
+    if not src or src.startswith(("http://", "https://")) or os.path.isabs(src):
+        return ""
+    return os.path.dirname(src)
+
+
 def process_source(s: dict, tag: str = "office") -> None:
-    """Извлечь один источник и обновить watched/<id>.txt при изменении."""
+    """Извлечь один источник и обновить watched/[subdir/]<id>.txt при изменении."""
     sid, doc_type, src = s.get("id"), s.get("type"), s.get("src")
     if not (sid and doc_type and src):
         print(f"[{tag}] пропуск некорректной записи: {s!r}", file=sys.stderr, flush=True)
         return
-    out = os.path.join(OUT_DIR, f"{sid}.txt")
+    out_dir = os.path.join(OUT_DIR, _resolve_out_subdir(src))
+    os.makedirs(out_dir, exist_ok=True)
+    out = os.path.join(out_dir, f"{sid}.txt")
     try:
         text = extract(doc_type, acquire(src))
         changed = atomic_write_if_changed(out, text)

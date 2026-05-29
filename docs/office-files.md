@@ -54,12 +54,19 @@ docmonitor/
   `watched/api-docs-v2.txt` → в CDIO заводите watch на этот путь.
 
 ### Поддиректории внутри `office-src/`
-Можно складывать в подпапки и указывать относительный путь:
+Можно складывать в подпапки. Адаптер **зеркалит структуру** в `watched/`:
 ```yaml
 - id: payments-api
   type: docx
   src: teams/payments/api.docx       # office-src/teams/payments/api.docx
 ```
+получится `watched/teams/payments/payments-api.txt` (подпапка взята из `src`,
+имя файла — из `id`). Соответствующий watch в CDIO:
+```
+file:///datastore/watched/teams/payments/payments-api.txt
+```
+Так у разных команд не пересекаются `id` и сразу видно, откуда что взялось.
+
 Watchdog рекурсивный — реакция на правки в подпапках такая же быстрая.
 
 ### Сменить сами папки на хосте
