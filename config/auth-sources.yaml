@@ -1,27 +1,14 @@
 # Источники за авторизацией для DocMonitor.
-# Провижининг: src/docmonitor/auth_provision.py (читает .env, подставляет ${VAR},
-# POST'ит / PUT'ит watch'и в CDIO REST API). Запуск:
+# Provisioning: src/docmonitor/auth_provision.py (читает .env, подставляет ${VAR},
+# POST'ит/PUT'ит watch'и в CDIO REST API). Запуск:
 #   docker compose exec -T office-adapter python /src/docmonitor/auth_provision.py
 #
 # Подробно: docs/auth-sources.md
-#
-# Поля:
-#   id       - уникальный идентификатор; используется в маппинге state/auth_provision_map.json
-#   title    - title watch'а в CDIO
-#   url      - целевой URL отслеживаемой страницы (на эту страницу зайдёт браузер)
-#   tag      - тег watch'а
-#   time_between_check - {hours: N} | {minutes: N} | {seconds: N}
-#   browser_steps - список шагов CDIO Browser Steps (Goto URL опускаем — CDIO сам открывает url выше)
-#                   В значениях шагов можно использовать ${ENV_VAR} — provisioning подставит.
-#
-# Поддерживаемые operation (из CDIO): "Enter text in field", "Click element",
-# "Click element containing text", "Goto URL", "Wait for seconds", "Wait for text".
-sources:
-  - id: amusnet-rest-api
-    title: "Amusnet REST API docs"
-    url: https://portal.api.amusnet.io/2.0/rest-api/rest-api/
-    tag: amusnet
-    time_between_check: { hours: 6 }
+
+# Переиспользуемые шаблоны логин-шагов. В source ссылаемся как `auth: <name>`.
+# Если в source задан собственный `browser_steps`, он переопределяет шаблон.
+auth_templates:
+  amusnet:
     browser_steps:
       - operation: Enter text in field
         selector: "#username"
@@ -33,3 +20,40 @@ sources:
         selector: "#kc-login"
       - operation: Wait for seconds
         optional_value: "5"
+
+sources:
+  # === Amusnet (Keycloak OAuth) — отслеживаемые разделы ===
+  - id: amusnet-rest-api
+    title: "Amusnet REST API"
+    url: https://portal.api.amusnet.io/2.0/rest-api/rest-api/
+    tag: amusnet
+    auth: amusnet
+    time_between_check: { hours: 6 }
+
+  - id: amusnet-demo-games
+    title: "Amusnet Demo Games"
+    url: https://portal.api.amusnet.io/2.0/demo-games/
+    tag: amusnet
+    auth: amusnet
+    time_between_check: { hours: 6 }
+
+  - id: amusnet-demo-games-api
+    title: "Amusnet Demo Games API"
+    url: https://portal.api.amusnet.io/2.0/demo-games/demo-games-api/
+    tag: amusnet
+    auth: amusnet
+    time_between_check: { hours: 6 }
+
+  - id: amusnet-jackpots
+    title: "Amusnet Jackpots"
+    url: https://portal.api.amusnet.io/2.0/jackpots/
+    tag: amusnet
+    auth: amusnet
+    time_between_check: { hours: 6 }
+
+  - id: amusnet-jackpot-statistics
+    title: "Amusnet Jackpot Statistics"
+    url: https://portal.api.amusnet.io/2.0/jackpots/jackpot-statistics/
+    tag: amusnet
+    auth: amusnet
+    time_between_check: { hours: 6 }

@@ -117,6 +117,22 @@ def provision_one(s: dict, state: dict) -> None:
             print(f"[auth] {sid}: POST failed {status}: {body!r}", file=sys.stderr, flush=True)
 
 
+def _resolve_template(s: dict, templates: dict) -> dict:
+    """Если у source есть 'auth: <name>' и нет собственных browser_steps —
+    подтягиваем browser_steps из шаблона. Если есть свои — оставляем как есть."""
+    auth_name = s.get("auth")
+    if not auth_name:
+        return s
+    tpl = templates.get(auth_name)
+    if not tpl:
+        raise ValueError(f"auth template '{auth_name}' не найден (source id={s.get('id')!r})")
+    if "browser_steps" in s:
+        return s
+    merged = dict(s)
+    merged["browser_steps"] = tpl.get("browser_steps", [])
+    return merged
+
+
 def main() -> None:
     if not API_KEY:
         sys.exit("CDIO_API_KEY не задан (положите в .env)")
@@ -124,11 +140,13 @@ def main() -> None:
         sys.exit(f"конфиг {CONFIG} не найден")
     with open(CONFIG) as f:
         cfg = yaml.safe_load(f) or {}
+    templates = cfg.get("auth_templates", {}) or {}
     state = _load_state()
     for s in cfg.get("sources", []) or []:
         if not s.get("id"):
             print(f"[auth] пропуск некорректной записи: {s!r}", file=sys.stderr)
             continue
+        s = _resolve_template(s, templates)
         provision_one(s, state)
     _save_state(state)
     print(f"[auth] state -> {STATE_FILE}", flush=True)
