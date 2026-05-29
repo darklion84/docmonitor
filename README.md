@@ -69,6 +69,13 @@ file:///datastore/watched/имя_файла.md
 ```
 (каталог `./watched` смонтирован в контейнер как `/datastore/watched`).
 
+**PDF по URL** — обычный `Add` на URL `.pdf`. CDIO извлекает текст нативно (`pdftohtml`).
+Удобно ignore-фильтром убрать строки `Document checksum` / `Original file size` от шума.
+
+**Word (.doc/.docx) и локальные PDF** — через `office-adapter`. Подробно: [`docs/office-files.md`](docs/office-files.md).
+Кратко: положите файл в `office-src/`, добавьте 3 строки в `config/office-sources.yaml` — `watched/<id>.txt`
+появится автоматически, дальше заводите обычный `file://`-watch в CDIO.
+
 ---
 
 ## Проверка MVP (end-to-end)

@@ -206,7 +206,7 @@ def run_loop_watch(interval: int) -> None:
     run_once()  # initial baseline
 
     obs = Observer(timeout=1.0)  # стейт раз в секунду
-    obs.schedule(_Handler(), SRC_DIR, recursive=False)
+    obs.schedule(_Handler(), SRC_DIR, recursive=True)   # включая подпапки office-src/
     obs.start()
     try:
         while True:
