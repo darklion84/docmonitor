@@ -25,8 +25,13 @@
 - [x] **Локальный PDF через адаптер**: `pdftotext` (poppler) — `office-src/local-sample.pdf` → `watched/sample-pdf.txt` → file://-watch; диф подтверждён в mailpit (`(changed)/(into)`)
 - [x] **Реактивный режим адаптера** (`--watch`): watchdog **PollingObserver** (timeout 1с) на `office-src/`. Inotify через virtiofs Colima НЕ ловил atomic-rename (Word/Pages/LibreOffice) — переключили на polling-наблюдатель, реакция ~1с при любом редакторе. Periodic-проход 600с остался для URL-источников и safety net.
 
-## Этап 3 — Авторизация
-- [ ] Browser Steps (логин) для закрытых источников; секреты через env
+## Этап 3 — Авторизация (план: docs/auth-sources.md)
+- [x] `.env` подключён к `office-adapter` через `env_file:` (для `CDIO_API_KEY` и `AUTH_*`)
+- [x] `config/auth-sources.yaml` — декларативные watch'и с `${ENV_VAR}` плейсхолдерами
+- [x] `src/docmonitor/auth_provision.py` — идемпотентный provisioner (id→uuid в `state/auth_provision_map.json`)
+- [x] Реальный auth-источник `amusnet-rest-api` (Keycloak OAuth/PKCE) — снапшот = реальные доки (74 docs-маркера vs 1 login-маркер)
+- [x] `docs/auth-sources.md` — инструкция по добавлению auth-источников
+- [ ] MFA-кейсы (TOTP / push / cookie-injection) — по необходимости, под конкретный сайт
 
 ## Этап 4 — JIRA
 - [ ] `notification-jira.json.j2` (webhook `post://`) + `jira_bridge.py` + `assignee_map.yaml`

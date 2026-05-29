@@ -62,11 +62,13 @@ services:
     build: ./docker/office-adapter
     container_name: docmonitor-office
     restart: unless-stopped
+    env_file: .env                  # CDIO_API_KEY + AUTH_* (auth-провижининг)
     volumes:
       - ./watched:/watched          # RW: сюда пишем .txt (в CDIO ./watched смонтирован RO)
       - ./config:/config:ro
       - ./src:/src:ro
       - ./office-src:/office-src:ro # сюда кладите локальные .doc/.docx
+      - ./state:/state              # маппинг id->uuid для auth_provision (gitignored)
     command: python /src/docmonitor/office_adapter.py --watch --interval 600
 
   browser-sockpuppet-chrome:

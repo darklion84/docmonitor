@@ -76,6 +76,9 @@ file:///datastore/watched/имя_файла.md
 Кратко: положите файл в `office-src/`, добавьте 3 строки в `config/office-sources.yaml` — `watched/<id>.txt`
 появится автоматически, дальше заводите обычный `file://`-watch в CDIO.
 
+**Источники за логином** (Keycloak/OAuth, обычные формы) — через `config/auth-sources.yaml` +
+provisioning-скрипт. Секреты в `.env`. Подробно: [`docs/auth-sources.md`](docs/auth-sources.md).
+
 ---
 
 ## Проверка MVP (end-to-end)
