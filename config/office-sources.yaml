@@ -1,0 +1,19 @@
+# Источники Word-документов для DocMonitor Office adapter.
+# Адаптер пишет нормализованный текст в watched/<id>.txt; в CDIO заведите watch:
+#   file:///datastore/watched/<id>.txt
+#
+# Поля:
+#   id    — имя файла-результата (watched/<id>.txt), уникально
+#   type  — doc | docx | pdf
+#   src   — URL (http/https) ИЛИ путь к файлу в каталоге office-src/ (или абсолютный путь в контейнере)
+#
+# ПРИМЕЧАНИЕ: PDF по URL заводите как обычный watch в CDIO (нативная поддержка).
+# Через адаптер гоните PDF, только если он ЛОКАЛЬНЫЙ (CDIO не умеет file://+PDF).
+sources:
+  - id: sample-doc
+    type: docx
+    src: sample.docx          # лежит в ./office-src/sample.docx
+
+  - id: sample-pdf
+    type: pdf
+    src: local-sample.pdf     # лежит в ./office-src/local-sample.pdf

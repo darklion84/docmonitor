@@ -1,0 +1,3 @@
+# Кладите сюда исходные Word-документы (.doc/.docx) для слежения.
+# Они монтируются в office-adapter как /office-src (read-only).
+# В config/office-sources.yaml указывайте src как имя файла (напр. sample.docx).

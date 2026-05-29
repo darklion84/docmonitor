@@ -1,0 +1,25 @@
+{# Тело уведомления для CDIO: Settings > Notifications > Notification Body.
+   Notification Title (отдельное поле): [DocMonitor] Изменилось: {{watch_url}}
+
+   РЕЦЕПТ «переносы + формат (changed)…(into) в почте» (проверено через mailpit, CDIO 0.55.7):
+   1) Notification format (глобально) = TEXT.
+   2) Email-URL — обычный, БЕЗ ?format=html:  mailto://USER:PASS@gmail.com
+      (text/plain → Gmail рендерит переносы строк).
+   3) Diff-токен: {{raw_diff}} (или {{diff_full}}) → даёт (changed) <старое> / (into) <новое>, без HTML-тегов.
+   4) КРИТИЧНО: email должен быть ЕДИНСТВЕННЫМ каналом в этом уведомлении.
+      Если в том же списке есть Telegram — его разметка diff (<s>/<b>) протекает в письмо
+      (баг общего мутируемого diff-объекта в CDIO): либо теги, либо пустой diff.
+      Нужен Telegram параллельно с чистым email-diff → решаем своим webhook-рендером (фаза JIRA).
+
+   Примечание: для локального .md текст извлекается одной строкой, поэтому (changed)/(into) — длинные строки.
+   Для реальных HTML-страниц структура сохраняется → diff будет многострочным и читабельным.
+
+   Токены: {{llm_summary}} — AI-резюме (опц.); {{raw_diff}} — буквальный diff; {{watch_url}}, {{watch_title}}, {{watch_tag}}.
+#}
+{{watch_url}} изменился.
+
+AI-резюме:
+{{llm_summary}}
+
+Изменения (diff):
+{{raw_diff}}

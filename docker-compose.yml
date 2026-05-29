@@ -1,0 +1,81 @@
+# DocMonitor — changedetection.io (CDIO) + headless browser sidecar
+# MVP: мониторинг HTML и локальных/Markdown файлов с email-уведомлениями и AI-резюме.
+# Версия образа запинена; бамп — осознанно (см. https://github.com/dgtlmoon/changedetection.io/releases).
+services:
+  changedetection:
+    image: ghcr.io/dgtlmoon/changedetection.io:0.55.7
+    container_name: docmonitor-cdio
+    restart: unless-stopped
+    ports:
+      # Хост-порт 5050: 5000 на macOS занят AirPlay Receiver (Server: AirTunes).
+      - "5050:5000"
+    volumes:
+      - changedetection-data:/datastore
+      # Локальные/Markdown файлы для слежения через file:///datastore/watched/<file>
+      - ./watched:/datastore/watched:ro
+    environment:
+      # Браузер-сайдкар: JS-рендеринг + Browser Steps (auth, фаза 3)
+      - PLAYWRIGHT_DRIVER_URL=ws://browser-sockpuppet-chrome:3000
+      # Нужно для слежения за локальными файлами через file:// (см. заметку о безопасности в README)
+      - ALLOW_FILE_URI=${ALLOW_FILE_URI:-true}
+      # Используется в ссылках уведомлений; за reverse-proxy укажите внешний URL
+      - BASE_URL=${BASE_URL:-http://localhost:5050}
+      # Параллельные воркеры-фетчеры; поднять для большого списка источников
+      - FETCH_WORKERS=${FETCH_WORKERS:-10}
+      # Ключ Anthropic для встроенных AI-резюме (также вводится в Settings > LLM)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # Разрешить watch'и на приватные/локальные адреса (нужно для локального http://testsite/).
+      # Ослабляет SSRF-защиту — оправдано для локального стенда; на проде убрать.
+      - ALLOW_IANA_RESTRICTED_ADDRESSES=${ALLOW_IANA_RESTRICTED_ADDRESSES:-true}
+    depends_on:
+      - browser-sockpuppet-chrome
+
+  # Локальный тестовый сайт: правьте ./site/index.html на хосте.
+  # CDIO видит его в compose-сети как http://testsite/ ; вы — на http://localhost:8081
+  testsite:
+    image: nginx:alpine
+    container_name: docmonitor-testsite
+    restart: unless-stopped
+    hostname: testsite
+    ports:
+      - "8081:80"
+    volumes:
+      - ./site:/usr/share/nginx/html:ro
+
+  # Локальный приёмник почты для тестов (без спама в реальный ящик).
+  # SMTP: mailpit:1025 (для CDIO) ; веб-интерфейс + API: http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: docmonitor-mailpit
+    restart: unless-stopped
+    hostname: mailpit
+    ports:
+      - "8025:8025"
+
+  # Office-адаптер: doc/docx -> watched/<id>.txt (CDIO следит по file://).
+  office-adapter:
+    build: ./docker/office-adapter
+    container_name: docmonitor-office
+    restart: unless-stopped
+    volumes:
+      - ./watched:/watched          # RW: сюда пишем .txt (в CDIO ./watched смонтирован RO)
+      - ./config:/config:ro
+      - ./src:/src:ro
+      - ./office-src:/office-src:ro # сюда кладите локальные .doc/.docx
+    command: python /src/docmonitor/office_adapter.py --watch --interval 600
+
+  browser-sockpuppet-chrome:
+    image: dgtlmoon/sockpuppetbrowser:latest
+    container_name: docmonitor-browser
+    restart: unless-stopped
+    hostname: browser-sockpuppet-chrome
+    environment:
+      - SCREEN_WIDTH=1920
+      - SCREEN_HEIGHT=1024
+      - SCREEN_DEPTH=16
+      # Лимит параллельных вкладок Chrome — держим в паре с FETCH_WORKERS
+      - MAX_CONCURRENT_CHROME_PROCESSES=10
+    # Порт наружу не нужен: с браузером общается только контейнер CDIO по сети compose.
+
+volumes:
+  changedetection-data:

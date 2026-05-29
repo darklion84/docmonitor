@@ -1,0 +1,8 @@
+.env
+watched/*
+!watched/.gitkeep
+__pycache__/
+*.pyc
+.venv/
+state/
+.DS_Store
