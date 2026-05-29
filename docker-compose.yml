@@ -1,6 +1,11 @@
 # DocMonitor — changedetection.io (CDIO) + headless browser sidecar
 # MVP: мониторинг HTML и локальных/Markdown файлов с email-уведомлениями и AI-резюме.
 # Версия образа запинена; бамп — осознанно (см. https://github.com/dgtlmoon/changedetection.io/releases).
+#
+# name: фиксирует имя compose-проекта независимо от имени папки.
+# Volumes/networks привязаны к нему, а не к директории — папку можно переименовывать.
+name: docmonitor
+
 services:
   changedetection:
     image: ghcr.io/dgtlmoon/changedetection.io:0.55.7
