@@ -79,6 +79,9 @@ file:///datastore/watched/имя_файла.md
 **Источники за логином** (Keycloak/OAuth, обычные формы) — через `config/auth-sources.yaml` +
 provisioning-скрипт. Секреты в `.env`. Подробно: [`docs/auth-sources.md`](docs/auth-sources.md).
 
+**Email-уведомления** (свой ящик-бот, разные получатели, нюансы Gmail, транзакционные провайдеры) —
+[`docs/notifications-email.md`](docs/notifications-email.md).
+
 ---
 
 ## Проверка MVP (end-to-end)
