@@ -7,17 +7,23 @@
 Принцип: **конфигурируем CDIO, а не пишем код**. Кастомный код появляется только в поздних фазах
 (Office-адаптер, JIRA-мост).
 
-## MVP: что работает на этом этапе
-- HTML-страницы и локальные/Markdown-файлы.
-- Детект изменений, текстовый **diff**, **AI-резюме** через Anthropic Claude.
-- Уведомление **на каждое изменение** по email.
+## Что сейчас работает
+- **HTML / Markdown / plain-text** — нативно CDIO, в т.ч. локальные файлы через `file://`.
+- **PDF** по URL (нативно) и **локальные PDF** через адаптер (`pdftotext`).
+- **Word**: `.docx` (`python-docx`) и legacy `.doc` (`antiword`).
+- **Источники за логином**: Keycloak/OAuth и обычные формы — через CDIO Browser Steps,
+  секреты в `.env`, провижининг из YAML через `auth_provision.py`.
+- **Детект изменений + текстовый diff + AI-резюме** (DeepSeek или Anthropic Claude).
+- **Уведомление по email** на каждое изменение, формат `(changed)/(into)` с переносами.
+- **Реактивный адаптер**: правка `.docx/.pdf` → `watched/<id>.txt` обновляется за ~1с.
+- **Структура подпапок зеркалится**: `office-src/teams/x.docx` → `watched/teams/x.txt`.
 
 ---
 
 ## Предварительно
-- Docker + Docker Compose.
-- Ключ **Anthropic** (`ANTHROPIC_API_KEY`) — для AI-резюме.
-- Доступ к **SMTP** (хост, логин/пароль, отправитель/получатель) — для email.
+- Docker + Docker Compose v2 (Colima / Docker Desktop / нативный).
+- Ключ LLM-провайдера (DeepSeek или Anthropic) — для AI-резюме.
+- Доступ к **SMTP** для боевой почты — необязательно, для тестов в стеке есть **mailpit**.
 
 ## Быстрый старт
 ```bash
@@ -90,19 +96,34 @@ provisioning-скрипт. Секреты в `.env`. Подробно: [`docs/au
 
 ---
 
-## Проверка MVP (end-to-end)
-1. Завести один HTML-watch и один `file://`-watch на тест-файл из `./watched/`.
-2. Изменить файл (или дождаться изменения страницы) → в watch нажать **Recheck**.
-3. В CDIO появляется непустой diff; на email приходит письмо с **diff** и **AI-резюме**.
-4. Проверить подавление шума: правка footer/nav не должна триггерить уведомление.
+## Проверка end-to-end
+1. Завести любой watch (HTML через UI, или file://-watch из `watched/`, или Word/PDF через `office-src/`).
+2. Изменить источник (или нажать **Recheck** в UI).
+3. CDIO фиксирует diff; на email приходит письмо с **diff** и **AI-резюме**
+   (для тестов смотрите письма в mailpit на `http://localhost:8025`).
+4. Опционально: проверить подавление шума ignore-фильтрами на nav/footer/таймстемпы.
 
 ## Заметка о безопасности
 `ALLOW_FILE_URI=true` включает доступ к `file://` (нужно для локальных файлов). Есть CVE-2024-51998
 (path traversal). Меры: держать контейнер изолированным, заводить `file://`-watch только на файлы из
 `./watched/`, своевременно обновлять образ CDIO.
 
-## Дальше по дорожной карте
-- **Фаза 2**: PDF (нативно) + `src/docmonitor/office_adapter.py` (docx/xlsx → `watched/*.txt`).
-- **Фаза 3**: источники за авторизацией — `Browser Steps` (логин), секреты через env.
-- **Фаза 4**: `src/docmonitor/jira_bridge.py` — CDIO шлёт templated JSON по webhook → создание задачи
-  в JIRA по шаблону + assignee из `config/assignee_map.yaml`.
+`ALLOW_IANA_RESTRICTED_ADDRESSES=true` (включён для локальной разработки, чтобы CDIO мог ходить в
+`http://testsite/` внутри compose-сети) ослабляет SSRF-защиту. **На проде уберите.**
+
+## Дорожная карта
+
+**Сделано:**
+- **Фаза 1** — MVP: HTML / Markdown / локальные текстовые, AI-резюме, email-доставка.
+- **Фаза 2** — PDF (URL и локальные через адаптер) + Office (`.doc`/`.docx`).
+  Реактивный адаптер с PollingObserver, атомарная запись, зеркалирование подпапок.
+  Подробно: [`docs/office-files.md`](docs/office-files.md).
+- **Фаза 3** — источники за логином: CDIO Browser Steps + Playwright sidecar, секреты в `.env`,
+  shared `auth_templates` в YAML, идемпотентный `auth_provision.py`. Проверено на Keycloak/OAuth.
+  Подробно: [`docs/auth-sources.md`](docs/auth-sources.md).
+
+**Дальше:**
+- **Фаза 4** — JIRA-мост: `notification-jira.json.j2` (CDIO шлёт по `post://` webhook
+  templated JSON) → `jira_bridge.py` принимает, создаёт задачу по шаблону,
+  assignee из `config/assignee_map.yaml` по `watch_tag`. Идемпотентность по
+  `watch_uuid+timestamp`, email-канал параллельно.
