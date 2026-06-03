@@ -1,7 +1,5 @@
 # DocMonitor — todo
 
-План: `/Users/darklion/.claude/plans/binary-wandering-lantern.md`
-
 ## Этап 1 — MVP (config-first, без кода)
 - [x] `docker-compose.yml` — CDIO 0.55.7 + sockpuppetbrowser sidecar, тома, `ALLOW_FILE_URI`
 - [x] `.env.example` + `.gitignore`

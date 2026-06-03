@@ -5,7 +5,7 @@
 формируется дельта (**diff + AI-резюме**) и уходит на **email**. В перспективе — задача в JIRA.
 
 Принцип: **конфигурируем CDIO, а не пишем код**. Кастомный код появляется только в поздних фазах
-(Office-адаптер, JIRA-мост). План: `/Users/darklion/.claude/plans/binary-wandering-lantern.md`.
+(Office-адаптер, JIRA-мост).
 
 ## MVP: что работает на этом этапе
 - HTML-страницы и локальные/Markdown-файлы.
@@ -81,6 +81,8 @@ provisioning-скрипт. Секреты в `.env`. Подробно: [`docs/au
 
 **Email-уведомления** (свой ящик-бот, разные получатели, нюансы Gmail, транзакционные провайдеры) —
 [`docs/notifications-email.md`](docs/notifications-email.md).
+
+**Развёртывание на другой машине** — [`docs/deploy.md`](docs/deploy.md).
 
 ---
 
