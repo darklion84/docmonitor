@@ -81,7 +81,7 @@ def run(cmd: list[str], **kw) -> subprocess.CompletedProcess:
 
 
 def run_capture(cmd: list[str]) -> str:
-    p = run(cmd, capture_output=True, text=True)
+    p = run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if p.returncode != 0:
         fail(f"{' '.join(cmd)} failed: {p.stderr.strip()}")
     return p.stdout
@@ -139,7 +139,7 @@ def extract_api_key() -> str:
         ["docker", "compose", "exec", "-T", "changedetection", "python3", "-c",
          "import json; print(json.load(open('/datastore/changedetection.json'))"
          "['settings']['application']['api_access_token'])"],
-        capture_output=True, text=True,
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
     )
     if p.returncode != 0:
         fail(f"не удалось извлечь CDIO API key: {p.stderr.strip()}")
@@ -157,7 +157,7 @@ def upsert_env_var(name: str, value: str) -> bool:
             ok(f".env создан из .env.example")
         else:
             ENV_PATH.touch()
-    lines = ENV_PATH.read_text().splitlines()
+    lines = ENV_PATH.read_text(encoding="utf-8").splitlines()
     pat = re.compile(rf"^\s*{re.escape(name)}\s*=")
     for i, ln in enumerate(lines):
         if pat.match(ln):
@@ -165,10 +165,10 @@ def upsert_env_var(name: str, value: str) -> bool:
             if existing.strip() == value:
                 return False
             lines[i] = f"{name}={value}"
-            ENV_PATH.write_text("\n".join(lines) + "\n")
+            ENV_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
             return True
     lines.append(f"{name}={value}")
-    ENV_PATH.write_text("\n".join(lines) + "\n")
+    ENV_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return True
 
 
@@ -222,7 +222,7 @@ def apply_defaults() -> list[str]:
     app = d.setdefault("settings", {}).setdefault("application", {})
     app.setdefault("llm", {})
 
-    body_default = EMAIL_TEMPLATE.read_text() if EMAIL_TEMPLATE.exists() else ""
+    body_default = EMAIL_TEMPLATE.read_text(encoding="utf-8") if EMAIL_TEMPLATE.exists() else ""
     changes: list[str] = []
 
     def apply(path: str, value, force: bool = False) -> None:
@@ -286,7 +286,7 @@ def apply_defaults() -> list[str]:
 def auth_env_present() -> bool:
     if not ENV_PATH.exists():
         return False
-    txt = ENV_PATH.read_text()
+    txt = ENV_PATH.read_text(encoding="utf-8")
     for ln in txt.splitlines():
         m = re.match(r"^\s*(AUTH_[A-Z0-9_]+_(USER|PASS))\s*=\s*(.+)$", ln)
         if m and m.group(3).strip():
@@ -303,7 +303,7 @@ def auth_provision() -> None:
         return
     p = run(["docker", "compose", "exec", "-T", "office-adapter",
              "python", "/src/docmonitor/auth_provision.py"],
-            capture_output=True, text=True)
+            capture_output=True, text=True, encoding="utf-8", errors="replace")
     for ln in (p.stdout + p.stderr).splitlines():
         ln = ln.strip()
         if ln:
