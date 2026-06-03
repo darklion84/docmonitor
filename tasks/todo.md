@@ -35,5 +35,13 @@
 - [ ] `notification-jira.json.j2` (webhook `post://`) + `jira_bridge.py` + `assignee_map.yaml`
 - [ ] Идемпотентность (без дублей тикетов); email-канал параллельно
 
+## Раздача команде (deploy-as-template)
+- [x] Деплой на Windows-машине через `bootstrap.py` (после фикса UTF-8 — commit f30b03d)
+- [x] `bootstrap.py`: pin `encoding="utf-8"` во всех file/subprocess IO (Windows cp1252 ломал чтение `.env`)
+- [x] `config/auth-sources.yaml` + `config/office-sources.yaml` → пустые шаблоны (личные источники = закомментированные примеры, `sources:[]` → деплой ничего не создаёт). commit df0305d
+- [ ] Личную auth-конфигурацию держать вне публичного репо (`*.local.yaml` или приватная ветка)
+- [x] `OFFICE_INTERVAL` в `.env` — настраиваемый интервал periodic-прохода адаптера (дефолт 600с). commit 026ec2d
+- [ ] ⚠️ ОТКРЫТО: на Windows (`C:\` + Docker Desktop) реактивный watchdog не ловит правку docx → `.txt` не обновляется. Диагностировать на той машине (план в shared-journal).
+
 ## Review
 (заполнить по итогам каждого этапа)
