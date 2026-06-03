@@ -69,7 +69,9 @@ services:
       - ./src:/src:ro
       - ./office-src:/office-src:ro # сюда кладите локальные .doc/.docx
       - ./state:/state              # маппинг id->uuid для auth_provision (gitignored)
-    command: python /src/docmonitor/office_adapter.py --watch --interval 600
+    # Интервал periodic-прохода — из OFFICE_INTERVAL в .env (дефолт 600с). Меняете —
+    # docker compose up -d --force-recreate office-adapter.
+    command: python /src/docmonitor/office_adapter.py --watch
 
   browser-sockpuppet-chrome:
     image: dgtlmoon/sockpuppetbrowser:latest

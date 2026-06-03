@@ -236,7 +236,9 @@ def main() -> None:
     ap.add_argument("--loop", action="store_true", help="периодический polling-цикл")
     ap.add_argument("--watch", action="store_true",
                     help="реактивно через watchdog (inotify) + polling как safety net (рекомендуется)")
-    ap.add_argument("--interval", type=int, default=600, help="интервал periodic-прохода, сек")
+    ap.add_argument("--interval", type=int,
+                    default=int(os.environ.get("OFFICE_INTERVAL", "600")),
+                    help="интервал periodic-прохода, сек (дефолт из OFFICE_INTERVAL, иначе 600)")
     args = ap.parse_args()
     if args.watch:
         run_loop_watch(args.interval)
