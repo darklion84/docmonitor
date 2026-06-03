@@ -21,10 +21,14 @@
 
 ## Быстрый старт
 ```bash
-cp .env.example .env        # заполнить ANTHROPIC_API_KEY, SMTP не обязателен (см. ниже)
-docker compose up -d
-# UI: http://localhost:5050
+git clone <repo-url> docmonitor && cd docmonitor
+python3 scripts/bootstrap.py
+# UI:  http://localhost:5050
 ```
+`bootstrap.py` поднимет стек, дотащит CDIO API key в `.env`, применит рекомендуемые
+настройки CDIO (LLM model/multiplier, Notifications format/template), при наличии
+`AUTH_*` в `.env` — провижионирует auth-источники, и напечатает чек-лист.
+Идемпотентен: непустые значения не перетирает. Подробно — [`docs/deploy.md`](docs/deploy.md).
 
 ## Настройка (один раз, через UI)
 
