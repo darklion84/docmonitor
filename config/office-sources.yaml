@@ -1,4 +1,8 @@
-# Источники Word-документов для DocMonitor Office adapter.
+# Источники Word/PDF-документов для DocMonitor Office adapter (ШАБЛОН).
+#
+# Этот файл намеренно ПУСТОЙ — при деплое адаптер ничего не обрабатывает,
+# пока ниже нет активной секции `sources:`. Раскомментируйте и заведите свои.
+#
 # Адаптер пишет нормализованный текст в watched/<id>.txt; в CDIO заведите watch:
 #   file:///datastore/watched/<id>.txt
 #
@@ -9,11 +13,19 @@
 #
 # ПРИМЕЧАНИЕ: PDF по URL заводите как обычный watch в CDIO (нативная поддержка).
 # Через адаптер гоните PDF, только если он ЛОКАЛЬНЫЙ (CDIO не умеет file://+PDF).
-sources:
-  - id: sample-doc
-    type: docx
-    src: sample.docx          # лежит в ./office-src/sample.docx
-
-  - id: sample-pdf
-    type: pdf
-    src: local-sample.pdf     # лежит в ./office-src/local-sample.pdf
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# ПРИМЕР (раскомментируйте и положите свои файлы в ./office-src/):
+#
+# sources:
+#   - id: my-doc
+#     type: docx
+#     src: my-doc.docx          # лежит в ./office-src/my-doc.docx
+#
+#   - id: my-pdf
+#     type: pdf
+#     src: my-local.pdf         # лежит в ./office-src/my-local.pdf
+#
+#   - id: remote-doc
+#     type: docx
+#     src: https://example.com/spec.docx   # или по URL

@@ -1,59 +1,57 @@
-# Источники за авторизацией для DocMonitor.
+# Источники за авторизацией для DocMonitor (ШАБЛОН).
+#
+# Этот файл намеренно ПУСТОЙ — он не создаёт ни одного watch'а при деплое.
+# Заполняйте его ТОЛЬКО если хотите декларативно (через git/IaC) заводить
+# источники под паролем. Для одиночного источника проще настроить Browser Steps
+# прямо в UI CDIO — provisioner не обязателен.
+#
 # Provisioning: src/docmonitor/auth_provision.py (читает .env, подставляет ${VAR},
 # POST'ит/PUT'ит watch'и в CDIO REST API). Запуск:
 #   docker compose exec -T office-adapter python /src/docmonitor/auth_provision.py
+# Provisioner сам пропустится, пока ниже нет активной секции `sources:`.
 #
 # Подробно: docs/auth-sources.md
-
-# Переиспользуемые шаблоны логин-шагов. В source ссылаемся как `auth: <name>`.
-# Если в source задан собственный `browser_steps`, он переопределяет шаблон.
-auth_templates:
-  amusnet:
-    browser_steps:
-      - operation: Enter text in field
-        selector: "#username"
-        optional_value: "${AUTH_AMUSNET_USER}"
-      - operation: Enter text in field
-        selector: "#password"
-        optional_value: "${AUTH_AMUSNET_PASS}"
-      - operation: Click element
-        selector: "#kc-login"
-      - operation: Wait for seconds
-        optional_value: "5"
-
-sources:
-  # === Amusnet (Keycloak OAuth) — отслеживаемые разделы ===
-  - id: amusnet-rest-api
-    title: "Amusnet REST API"
-    url: https://portal.api.amusnet.io/2.0/rest-api/rest-api/
-    tag: amusnet
-    auth: amusnet
-    time_between_check: { hours: 6 }
-
-  - id: amusnet-demo-games
-    title: "Amusnet Demo Games"
-    url: https://portal.api.amusnet.io/2.0/demo-games/
-    tag: amusnet
-    auth: amusnet
-    time_between_check: { hours: 6 }
-
-  - id: amusnet-demo-games-api
-    title: "Amusnet Demo Games API"
-    url: https://portal.api.amusnet.io/2.0/demo-games/demo-games-api/
-    tag: amusnet
-    auth: amusnet
-    time_between_check: { hours: 6 }
-
-  - id: amusnet-jackpots
-    title: "Amusnet Jackpots"
-    url: https://portal.api.amusnet.io/2.0/jackpots/
-    tag: amusnet
-    auth: amusnet
-    time_between_check: { hours: 6 }
-
-  - id: amusnet-jackpot-statistics
-    title: "Amusnet Jackpot Statistics"
-    url: https://portal.api.amusnet.io/2.0/jackpots/jackpot-statistics/
-    tag: amusnet
-    auth: amusnet
-    time_between_check: { hours: 6 }
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# КАК ЗАПОЛНИТЬ (раскомментируйте и поправьте под себя):
+#
+# 1) Логин/пароль кладутся в .env (он в .gitignore), здесь — только плейсхолдеры:
+#       AUTH_MYSITE_USER=ivan@example.com
+#       AUTH_MYSITE_PASS=secret
+#    ВАЖНО: после правки .env пересоздайте контейнер, иначе новые переменные
+#    не попадут в окружение:  docker compose up -d --force-recreate office-adapter
+#    (если в пароле есть символ $ — экранируйте его удвоением: $$)
+#
+# 2) Переиспользуемые шаблоны логин-шагов. В source ссылаемся как `auth: <name>`.
+#    Если в source задан собственный `browser_steps`, он переопределяет шаблон.
+#
+# auth_templates:
+#   mysite:
+#     browser_steps:
+#       - operation: Enter text in field
+#         selector: "#username"
+#         optional_value: "${AUTH_MYSITE_USER}"
+#       - operation: Enter text in field
+#         selector: "#password"
+#         optional_value: "${AUTH_MYSITE_PASS}"
+#       - operation: Click element
+#         selector: "#kc-login"
+#       - operation: Wait for seconds
+#         optional_value: "5"
+#
+# 3) Сами источники. Несколько источников могут делить один шаблон (`auth: mysite`).
+#
+# sources:
+#   - id: mysite-docs            # уникальный id, попадёт в state/auth_provision_map.json
+#     title: "My Site Docs"
+#     url: https://mysite.example.com/docs/
+#     tag: mysite
+#     auth: mysite               # ссылка на auth_templates.mysite
+#     time_between_check: { hours: 6 }
+#
+#   - id: mysite-api
+#     title: "My Site API"
+#     url: https://mysite.example.com/api/
+#     tag: mysite
+#     auth: mysite
+#     time_between_check: { hours: 6 }
