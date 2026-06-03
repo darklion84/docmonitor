@@ -14,12 +14,24 @@ file:// и формирует diff/уведомления как для обыч
   python office_adapter.py --watch --interval 600   # реактивно (inotify) + polling как safety net
 """
 import argparse
+import ctypes
+import ctypes.util
 import io
 import os
 import subprocess
 import sys
 import tempfile
 import time
+
+# posix_fadvise(DONTNEED) сбрасывает страничный кэш для конкретного fd.
+# На Docker-on-Windows (drvfs) это заставляет ядро перечитать файл с хоста,
+# а не отдавать устаревшие кэшированные байты.
+_libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
+_POSIX_FADV_DONTNEED = 4
+
+
+def _invalidate_file_cache(fd: int) -> None:
+    _libc.posix_fadvise(fd, 0, 0, _POSIX_FADV_DONTNEED)
 
 import httpx
 import yaml
@@ -41,7 +53,9 @@ def acquire(src: str) -> bytes:
         r.raise_for_status()
         return r.content
     path = src if os.path.isabs(src) else os.path.join(SRC_DIR, src)
-    with open(path, "rb") as f:
+    fd = os.open(path, os.O_RDONLY)
+    _invalidate_file_cache(fd)
+    with os.fdopen(fd, "rb") as f:
         return f.read()
 
 
