@@ -29,6 +29,7 @@ import subprocess
 import sys
 import time
 import urllib.request
+import webbrowser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -344,6 +345,17 @@ def checklist() -> None:
     print("  Testsite: http://localhost:8081")
 
 
+# --- 8. open browser ---------------------------------------------------------
+def open_browser() -> None:
+    step("Открываю UI в браузере")
+    for url in ("http://localhost:5050", "http://localhost:8025"):
+        try:
+            webbrowser.open_new_tab(url)
+            ok(url)
+        except Exception as e:
+            warn(f"не удалось открыть {url}: {e}")
+
+
 # --- main --------------------------------------------------------------------
 def main() -> None:
     print("\033[1mDocMonitor bootstrap\033[0m")
@@ -354,6 +366,7 @@ def main() -> None:
     apply_defaults()
     auth_provision()
     checklist()
+    open_browser()
 
 
 if __name__ == "__main__":
