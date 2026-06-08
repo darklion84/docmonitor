@@ -355,10 +355,8 @@ def open_browser() -> None:
         except Exception as e:
             warn(f"не удалось открыть {url}: {e}")
     print()
-    print("  Чтобы остановить стек после тестирования:")
-    print("    docker compose stop          # пауза (данные сохраняются)")
-    print("    docker compose down          # удалить контейнеры (данные в volumes сохраняются)")
-    print("    docker compose down -v       # удалить контейнеры И volumes (полный сброс)")
+    print("  Чтобы отключить тестовые сервисы (mailpit + testsite) после проверки:")
+    print("    docker compose stop mailpit testsite")
 
 
 # --- main --------------------------------------------------------------------
