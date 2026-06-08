@@ -36,6 +36,29 @@ python3 scripts/bootstrap.py
 `AUTH_*` в `.env` — провижионирует auth-источники, и напечатает чек-лист.
 Идемпотентен: непустые значения не перетирает. Подробно — [`docs/deploy.md`](docs/deploy.md).
 
+## Дефолтные watch-и (демо)
+
+`bootstrap.py` автоматически регистрирует три демо-источника:
+
+| Источник | URL в CDIO | Файл на хосте |
+|----------|-----------|---------------|
+| Word-документ | `file:///datastore/watched/my-doc.txt` | `office-src/my-doc.docx` → конвертируется через office-adapter |
+| Markdown | `file:///datastore/watched/sample.md` | `watched/sample.md` (создаётся при первом запуске) |
+| Тестовый сайт | `http://testsite/` | `site/index.html` |
+
+Все три получают тег `demo`. Проверить что детект и уведомления работают — end-to-end смок-тест:
+```bash
+PYTHONUTF8=1 python scripts/test_watches.py
+```
+Скрипт: проверяет наличие watch-ей, вносит изменения в каждый источник, принудительно запускает recheck и убеждается что в Mailpit пришли письма с корректным Subject, diff и AI-резюме.
+
+> Для теста `my-doc.docx` нужен `python-docx` на хосте: `pip install python-docx`
+
+Отключить тестовые сервисы (mailpit + testsite) после проверки:
+```bash
+docker compose stop mailpit testsite
+```
+
 ## Настройка (один раз, через UI)
 
 ### 1. Email-уведомления (глобально)
