@@ -348,12 +348,17 @@ def checklist() -> None:
 # --- 8. open browser ---------------------------------------------------------
 def open_browser() -> None:
     step("Открываю UI в браузере")
-    for url in ("http://localhost:5050", "http://localhost:8025"):
+    for url in ("http://localhost:5050", "http://localhost:8025", "http://localhost:8081"):
         try:
             webbrowser.open_new_tab(url)
             ok(url)
         except Exception as e:
             warn(f"не удалось открыть {url}: {e}")
+    print()
+    print("  Чтобы остановить стек после тестирования:")
+    print("    docker compose stop          # пауза (данные сохраняются)")
+    print("    docker compose down          # удалить контейнеры (данные в volumes сохраняются)")
+    print("    docker compose down -v       # удалить контейнеры И volumes (полный сброс)")
 
 
 # --- main --------------------------------------------------------------------
