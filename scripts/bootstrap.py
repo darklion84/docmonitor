@@ -38,6 +38,28 @@ ENV_EXAMPLE = ROOT / ".env.example"
 EMAIL_TEMPLATE = ROOT / "config" / "notification-email.j2"
 AUTH_SOURCES_YAML = ROOT / "config" / "auth-sources.yaml"
 
+CDIO_API = "http://localhost:5050"
+
+# Дефолтные watches для демо-запуска.
+# URL-ы — с точки зрения CDIO-контейнера: file:///datastore/... и docker-сеть для testsite.
+DEFAULT_WATCHES = [
+    {
+        "url": "file:///datastore/watched/my-doc.txt",
+        "title": "my-doc.docx",
+        "tag": "demo",
+    },
+    {
+        "url": "file:///datastore/watched/sample.md",
+        "title": "sample.md",
+        "tag": "demo",
+    },
+    {
+        "url": "http://testsite/",
+        "title": "testsite",
+        "tag": "demo",
+    },
+]
+
 # Рекомендуемые дефолты.
 # Применяются, ТОЛЬКО если у пользователя соответствующее поле пустое — иначе сохраняем его выбор.
 DEFAULTS = {
@@ -53,7 +75,7 @@ DEFAULTS = {
         "Только суть, без воды, без англоязычных заголовков."
     ),
     "notification_format": "text",
-    "notification_title": "[DocMonitor] Изменилось: {{watch_title}}",
+    "notification_title": "Docmonitor Notification - {{watch_title}} at {{watch_url}}",
     "notification_urls": [
         "mailto://docmonitor@example.com?smtp=mailpit&port=1025&to=catch@example.com"
     ],
@@ -313,7 +335,52 @@ def auth_provision() -> None:
         warn("auth_provision вернул ненулевой код — гляньте логи выше")
 
 
-# --- 7. checklist ------------------------------------------------------------
+# --- 7. provision watches ----------------------------------------------------
+def _cdio_request(method: str, path: str, api_key: str, body=None):
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(
+        f"{CDIO_API}{path}",
+        data=data,
+        headers={"x-api-key": api_key, "Content-Type": "application/json"},
+        method=method,
+    )
+    with urllib.request.urlopen(req, timeout=10) as r:
+        return json.loads(r.read())
+
+
+def provision_watches(api_key: str) -> None:
+    step("Провижинирую дефолтные watches")
+
+    sample_md = ROOT / "watched" / "sample.md"
+    if not sample_md.exists():
+        sample_md.write_text(
+            "# Sample Document\n\n"
+            "This is a sample Markdown file for DocMonitor change detection demo.\n\n"
+            "## Section 1\n\n"
+            "Edit this file to trigger a change notification.\n",
+            encoding="utf-8",
+        )
+        ok("создан watched/sample.md")
+
+    try:
+        existing = _cdio_request("GET", "/api/v1/watch", api_key)
+        existing_urls = {w.get("url") for w in existing.values()}
+    except Exception as e:
+        warn(f"не удалось получить список watches: {e}")
+        return
+
+    for watch in DEFAULT_WATCHES:
+        if watch["url"] in existing_urls:
+            ok(f"уже есть: {watch['title']}")
+            continue
+        try:
+            _cdio_request("POST", "/api/v1/watch", api_key, watch)
+            ok(f"добавлен: {watch['title']} → {watch['url']}")
+        except Exception as e:
+            warn(f"не удалось добавить {watch['title']}: {e}")
+
+
+# --- 8. checklist ------------------------------------------------------------
 def checklist() -> None:
     step("Что осталось задать руками")
     items: list[str] = []
@@ -345,7 +412,7 @@ def checklist() -> None:
     print("  Testsite: http://localhost:8081")
 
 
-# --- 8. open browser ---------------------------------------------------------
+# --- 9. open browser ---------------------------------------------------------
 def open_browser() -> None:
     step("Открываю UI в браузере")
     for url in ("http://localhost:5050", "http://localhost:8025", "http://localhost:8081"):
@@ -365,9 +432,10 @@ def main() -> None:
     check_prereqs()
     compose_up()
     health()
-    setup_api_key()
+    api_key = setup_api_key()
     apply_defaults()
     auth_provision()
+    provision_watches(api_key)
     checklist()
     open_browser()
 
