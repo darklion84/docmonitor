@@ -13,5 +13,6 @@ __pycache__/
 .DS_Store
 *.bak
 *.swp
+~$*
 .idea/
 .vscode/
