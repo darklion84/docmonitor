@@ -21,9 +21,16 @@
 ---
 
 ## Предварительно
-- Docker + Docker Compose v2 (Colima / Docker Desktop / нативный).
-- Ключ LLM-провайдера (DeepSeek или Anthropic) — для AI-резюме.
-- Доступ к **SMTP** для боевой почты — необязательно, для тестов в стеке есть **mailpit**.
+
+**Обязательно:**
+- **Git** — для клонирования репозитория.
+- **Docker + Docker Compose v2** (Colima / Docker Desktop / нативный) — весь стек работает в контейнерах.
+- **Python 3** — для запуска `bootstrap.py` и smoke-тестов.
+- **Ключ LLM-провайдера** (DeepSeek или Anthropic `ANTHROPIC_API_KEY`) — для AI-резюме.
+
+**Опционально:**
+- `pip install python-docx` — нужен на хосте только для smoke-теста `test_watches.py` (тест `.docx`).
+- Доступ к **SMTP** для боевой почты — для тестов в стеке есть встроенный **mailpit**.
 
 ## Быстрый старт
 ```bash
